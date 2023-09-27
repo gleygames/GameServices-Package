@@ -26,7 +26,7 @@ namespace Gley.GameServices.Editor
         private bool usePlaymaker;
         private bool useUVS;
 
-        [MenuItem(SettingsWindowProperties.menuItem, false, 40)]
+        [MenuItem(SettingsWindowProperties.menuItem, false, 50)]
         private static void Init()
         {
             WindowLoader.LoadWindow<SettingsWindow>(new SettingsWindowProperties(), out rootFolder, out rootWithoutAssets);

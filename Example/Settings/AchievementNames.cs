@@ -8,6 +8,7 @@ namespace Gley.GameServices
         HighJumper,
         KingofJumps,
         Freedom,
+        KingOfJumps,
     }
 }
 #endif
