@@ -21,6 +21,8 @@ namespace Gley.GameServices.Editor
         private Vector2 scrollPosition = Vector2.zero;
         private string googleAppId;
         private string errorText = "";
+        private int step;
+        private bool installing;
         private bool useForAndroid;
         private bool useForIos;
         private bool usePlaymaker;
@@ -30,6 +32,17 @@ namespace Gley.GameServices.Editor
         private static void Init()
         {
             WindowLoader.LoadWindow<SettingsWindow>(new SettingsWindowProperties(), out rootFolder, out rootWithoutAssets);
+        }
+
+        private void OnInspectorUpdate()
+        {
+            if (installing == true)
+            {
+                if (EditorApplication.isCompiling == false)
+                {
+                    SaveSettings();
+                }
+            }
         }
 
 
@@ -67,70 +80,121 @@ namespace Gley.GameServices.Editor
         /// </summary>
         private void SaveSettings()
         {
-            //setup preprocessor directives based on settings
-            if (useForAndroid)
+            installing = false;
+            switch (step)
             {
-                PreprocessorDirective.AddToPlatform(SettingsWindowProperties.GLEY_GAMESERVICES_ANDROID, false, BuildTargetGroup.Android);
-            }
-            else
-            {
-                PreprocessorDirective.AddToPlatform(SettingsWindowProperties.GLEY_GAMESERVICES_ANDROID, true, BuildTargetGroup.Android);
-            }
-            if (useForIos)
-            {
-                PreprocessorDirective.AddToPlatform(SettingsWindowProperties.GLEY_GAMESERVICES_IOS, false, BuildTargetGroup.iOS);
-            }
-            else
-            {
-                PreprocessorDirective.AddToPlatform(SettingsWindowProperties.GLEY_GAMESERVICES_IOS, true, BuildTargetGroup.iOS);
-            }
+                case 0:
+                    //setup preprocessor directives based on settings
+                    if (usePlaymaker)
+                    {
+                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, false, BuildTargetGroup.Android);
+                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, false, BuildTargetGroup.iOS);
+                    }
+                    else
+                    {
+                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, true, BuildTargetGroup.Android);
+                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, true, BuildTargetGroup.iOS);
+                    }
 
-            if (usePlaymaker)
-            {
-                PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, false, BuildTargetGroup.Android);
-                PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, false, BuildTargetGroup.iOS);
-            }
-            else
-            {
-                PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, true, BuildTargetGroup.Android);
-                PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, true, BuildTargetGroup.iOS);
-            }
+                    if (useUVS)
+                    {
+                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, false, BuildTargetGroup.Android);
+                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, false, BuildTargetGroup.iOS);
+                    }
+                    else
+                    {
+                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, true, BuildTargetGroup.Android);
+                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, true, BuildTargetGroup.iOS);
+                    }
 
-            if (useUVS)
-            {
-                PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, false, BuildTargetGroup.Android);
-                PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, false, BuildTargetGroup.iOS);
-            }
-            else
-            {
-                PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, true, BuildTargetGroup.Android);
-                PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, true, BuildTargetGroup.iOS);
-            }
+                    //save id`s
+                    gameServicesData.googleAppId = googleAppId;
+                    gameServicesData.useForAndroid = useForAndroid;
+                    gameServicesData.useForIos = useForIos;
+                    gameServicesData.usePlaymaker = usePlaymaker;
+                    gameServicesData.useUVS = useUVS;
 
-            //save id`s
-            gameServicesData.googleAppId = googleAppId;
-            gameServicesData.useForAndroid = useForAndroid;
-            gameServicesData.useForIos = useForIos;
-            gameServicesData.usePlaymaker = usePlaymaker;
-            gameServicesData.useUVS = useUVS;
+                    gameServicesData.allGameAchievements = new List<Achievement>();
+                    for (int i = 0; i < localAchievements.Count; i++)
+                    {
+                        gameServicesData.allGameAchievements.Add(localAchievements[i]);
+                    }
 
-            gameServicesData.allGameAchievements = new List<Achievement>();
-            for (int i = 0; i < localAchievements.Count; i++)
-            {
-                gameServicesData.allGameAchievements.Add(localAchievements[i]);
-            }
+                    gameServicesData.allGameLeaderboards = new List<Leaderboard>();
+                    for (int i = 0; i < localLeaderboards.Count; i++)
+                    {
+                        gameServicesData.allGameLeaderboards.Add(localLeaderboards[i]);
+                    }
+                    installing = true;
+                    step++;
+                    break;
 
-            gameServicesData.allGameLeaderboards = new List<Leaderboard>();
-            for (int i = 0; i < localLeaderboards.Count; i++)
-            {
-                gameServicesData.allGameLeaderboards.Add(localLeaderboards[i]);
-            }
+                case 1:
+                    Gley.Common.EditorUtilities.CreateFolder($"{rootFolder}/Plugins/Android/");
+                    installing = true;
+                    step++;
+                    break;
 
-            CreateManifestFile();
-            CreateEnumFiles();
-            EditorUtility.SetDirty(gameServicesData);
+                case 2:
+                    if (!Directory.Exists($"{rootFolder}/Plugins/Android/GameServicesManifest.plugin"))
+                    {
+                        AssetDatabase.CreateFolder($"{rootFolder}/Plugins/Android", "GameServicesManifest.plugin");
+                    }
+                    AssetDatabase.Refresh();
+                    installing = true;
+                    step++;
+                    break;
+
+                case 3:
+                    string text = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                   "<manifest xmlns:android = \"http://schemas.android.com/apk/res/android\"\n" +
+                   "package=\"com.google.example.games.mainlibproj\">\n" +
+                   "<application>\n" +
+                   "<meta-data android:name=\"com.google.android.gms.games.APP_ID\" android:value = \"\\" + googleAppId + "\" />\n" +
+                   "<activity android:name=\"com.google.games.bridge.NativeBridgeActivity\" android:theme = \"@android:style/Theme.Translucent.NoTitleBar.Fullscreen\" />\n" +
+                   "</application>\n" +
+                   "</manifest>";
+
+                    File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/Plugins/Android/GameServicesManifest.plugin/AndroidManifest.xml", text);
+
+                    text = "target=android-16\nandroid.library = true";
+                    File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/Plugins/Android/GameServicesManifest.plugin/project.properties", text);
+                    AssetDatabase.Refresh();
+                    installing = true;
+                    step++;
+                    break;
+
+                case 4:
+                    CreateEnumFiles();
+                    installing = true;
+                    step++;
+                    break;
+
+                case 5:
+                    if (useForAndroid)
+                    {
+                        PreprocessorDirective.AddToPlatform(SettingsWindowProperties.GLEY_GAMESERVICES_ANDROID, false, BuildTargetGroup.Android);
+                    }
+                    else
+                    {
+                        PreprocessorDirective.AddToPlatform(SettingsWindowProperties.GLEY_GAMESERVICES_ANDROID, true, BuildTargetGroup.Android);
+                    }
+                    if (useForIos)
+                    {
+                        PreprocessorDirective.AddToPlatform(SettingsWindowProperties.GLEY_GAMESERVICES_IOS, false, BuildTargetGroup.iOS);
+                    }
+                    else
+                    {
+                        PreprocessorDirective.AddToPlatform(SettingsWindowProperties.GLEY_GAMESERVICES_IOS, true, BuildTargetGroup.iOS);
+                    }
+                    break;
+
+                default:                   
+                    EditorUtility.SetDirty(gameServicesData);
+                    errorText = "Save Success";
+                    break;
+            }    
         }
-
 
         /// <summary>
         /// Display Settings Window
@@ -271,8 +335,8 @@ namespace Gley.GameServices.Editor
             {
                 if (CheckForNull() == false)
                 {
-                    SaveSettings();
-                    errorText = "Save Success";
+                    step = 0;
+                    SaveSettings();             
                 }
             }
 
@@ -383,37 +447,7 @@ namespace Gley.GameServices.Editor
         }
 
 
-        /// <summary>
-        /// Auto-generate Google Play manifest to replace the one generated by Google
-        /// </summary>
-        private void CreateManifestFile()
-        {
-            Gley.Common.EditorUtilities.CreateFolder($"{rootFolder}/Plugins/Android/");
-            if (!Directory.Exists($"{rootFolder}/Plugins/Android/GameServicesManifest.plugin"))
-            {
-                AssetDatabase.CreateFolder($"{rootFolder}/Plugins/Android", "GameServicesManifest.plugin");
-            }
-            AssetDatabase.Refresh();
 
-            try
-            {
-                string text = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                    "<manifest xmlns:android = \"http://schemas.android.com/apk/res/android\"\n" +
-                    "package=\"com.google.example.games.mainlibproj\">\n" +
-                    "<application>\n" +
-                    "<meta-data android:name=\"com.google.android.gms.games.APP_ID\" android:value = \"\\" + googleAppId + "\" />\n" +
-                    "<activity android:name=\"com.google.games.bridge.NativeBridgeActivity\" android:theme = \"@android:style/Theme.Translucent.NoTitleBar.Fullscreen\" />\n" +
-                    "</application>\n" +
-                    "</manifest>";
-
-                File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/Plugins/Android/GameServicesManifest.plugin/AndroidManifest.xml", text);
-
-                text = "target=android-16\nandroid.library = true";
-                File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/Plugins/Android/GameServicesManifest.plugin/project.properties", text);
-                AssetDatabase.Refresh();
-            }
-            catch { }
-        }
 
 
         /// <summary>
@@ -422,14 +456,14 @@ namespace Gley.GameServices.Editor
         private void CreateEnumFiles()
         {
 
-            string text = 
-            "namespace Gley.GameServices\n"+
-            "{\n"+
+            string text =
+            "namespace Gley.GameServices\n" +
+            "{\n" +
             "\tpublic enum AchievementNames\n" +
             "\t{\n";
             for (int i = 0; i < localAchievements.Count; i++)
             {
-                text +="\t\t"+ localAchievements[i].name + ",\n";
+                text += "\t\t" + localAchievements[i].name + ",\n";
             }
             text += "\t}\n";
             text += "}";
@@ -442,7 +476,7 @@ namespace Gley.GameServices.Editor
             "\t{\n";
             for (int i = 0; i < localLeaderboards.Count; i++)
             {
-                text +="\t\t"+ localLeaderboards[i].name + ",\n";
+                text += "\t\t" + localLeaderboards[i].name + ",\n";
             }
             text += "\t}\n";
             text += "}";
