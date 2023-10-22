@@ -80,6 +80,7 @@ namespace Gley.GameServices.Editor
         /// </summary>
         private void SaveSettings()
         {
+            Debug.Log($"Saving {step + 1}/7");
             installing = false;
             switch (step)
             {
@@ -125,20 +126,22 @@ namespace Gley.GameServices.Editor
                     {
                         gameServicesData.allGameLeaderboards.Add(localLeaderboards[i]);
                     }
+                    EditorUtility.SetDirty(gameServicesData);
                     installing = true;
                     step++;
                     break;
 
                 case 1:
                     Gley.Common.EditorUtilities.CreateFolder($"{rootFolder}/Plugins/Android/");
+                    AssetDatabase.Refresh();
                     installing = true;
                     step++;
                     break;
 
                 case 2:
-                    if (!Directory.Exists($"{rootFolder}/Plugins/Android/GameServicesManifest.plugin"))
+                    if (!Directory.Exists($"{rootFolder}/Plugins/Android/GameServicesManifest.androidlib"))
                     {
-                        AssetDatabase.CreateFolder($"{rootFolder}/Plugins/Android", "GameServicesManifest.plugin");
+                        AssetDatabase.CreateFolder($"{rootFolder}/Plugins/Android", "GameServicesManifest.androidlib");
                     }
                     AssetDatabase.Refresh();
                     installing = true;
@@ -148,17 +151,16 @@ namespace Gley.GameServices.Editor
                 case 3:
                     string text = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                    "<manifest xmlns:android = \"http://schemas.android.com/apk/res/android\"\n" +
-                   "package=\"com.google.example.games.mainlibproj\">\n" +
-                   "<application>\n" +
-                   "<meta-data android:name=\"com.google.android.gms.games.APP_ID\" android:value = \"\\" + googleAppId + "\" />\n" +
-                   "<activity android:name=\"com.google.games.bridge.NativeBridgeActivity\" android:theme = \"@android:style/Theme.Translucent.NoTitleBar.Fullscreen\" />\n" +
-                   "</application>\n" +
+                   "\tpackage=\"com.google.example.games.mainlibproj\"" +
+                   "\tandroid:versionCode=\"1\"\n" +
+                   "\tandroid:versionName=\"1.0\">\n" +
+                   "\t<application>\n" +
+                   "\t\t<meta-data android:name=\"com.google.android.gms.games.APP_ID\" android:value = \"\\" + googleAppId + "\" />\n" +
+                   "\t\t<activity android:name=\"com.google.games.bridge.NativeBridgeActivity\" android:theme = \"@android:style/Theme.Translucent.NoTitleBar.Fullscreen\" />\n" +
+                   "\t</application>\n" +
                    "</manifest>";
 
-                    File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/Plugins/Android/GameServicesManifest.plugin/AndroidManifest.xml", text);
-
-                    text = "target=android-16\nandroid.library = true";
-                    File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/Plugins/Android/GameServicesManifest.plugin/project.properties", text);
+                    File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/Plugins/Android/GameServicesManifest.androidlib/AndroidManifest.xml", text);
                     AssetDatabase.Refresh();
                     installing = true;
                     step++;
@@ -187,11 +189,13 @@ namespace Gley.GameServices.Editor
                     {
                         PreprocessorDirective.AddToPlatform(SettingsWindowProperties.GLEY_GAMESERVICES_IOS, true, BuildTargetGroup.iOS);
                     }
+                    step++;
+                    installing = true;
                     break;
 
-                default:                   
-                    EditorUtility.SetDirty(gameServicesData);
+                default:    
                     errorText = "Save Success";
+                    Debug.Log(errorText);
                     break;
             }    
         }
