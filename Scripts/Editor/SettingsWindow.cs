@@ -193,11 +193,11 @@ namespace Gley.GameServices.Editor
                     installing = true;
                     break;
 
-                default:    
+                default:
                     errorText = "Save Success";
                     Debug.Log(errorText);
                     break;
-            }    
+            }
         }
 
         /// <summary>
@@ -340,7 +340,7 @@ namespace Gley.GameServices.Editor
                 if (CheckForNull() == false)
                 {
                     step = 0;
-                    SaveSettings();             
+                    SaveSettings();
                 }
             }
 
@@ -461,6 +461,7 @@ namespace Gley.GameServices.Editor
         {
 
             string text =
+            "#if GLEY_GAMESERVICES_ANDROID || GLEY_GAMESERVICES_IOS\n" +
             "namespace Gley.GameServices\n" +
             "{\n" +
             "\tpublic enum AchievementNames\n" +
@@ -470,10 +471,12 @@ namespace Gley.GameServices.Editor
                 text += "\t\t" + localAchievements[i].name + ",\n";
             }
             text += "\t}\n";
-            text += "}";
+            text += "}\n";
+            text += "#endif";
             File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/Scripts/ToUse/AchievementNames.cs", text);
 
             text =
+            "#if GLEY_GAMESERVICES_ANDROID || GLEY_GAMESERVICES_IOS\n" +
             "namespace Gley.GameServices\n" +
             "{\n" +
             "\tpublic enum LeaderboardNames\n" +
@@ -483,7 +486,8 @@ namespace Gley.GameServices.Editor
                 text += "\t\t" + localLeaderboards[i].name + ",\n";
             }
             text += "\t}\n";
-            text += "}";
+            text += "}\n";
+            text += "#endif";
             File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/Scripts/ToUse/LeaderboardNames.cs", text);
 
             AssetDatabase.Refresh();
