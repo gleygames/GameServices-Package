@@ -11,16 +11,16 @@ namespace Gley.GameServices.Editor
         internal static object gameServicesTest = "Example/Scenes/GameServicesTest.unity";
         internal static string documentation= "https://gley.gitbook.io/easy-achievements/";
 
-        public string versionFilePath => "/Scripts/Version.txt";
+        public string VersionFilePath => "/Scripts/Version.txt";
 
-        public string windowName => "Game Services - v.";
+        public string WindowName => "Game Services - v.";
 
-        public int minWidth => 520;
+        public int MinWidth => 520;
 
-        public int minHeight => 520;
+        public int MinHeight => 520;
 
-        public string folderName => "GameServices";
+        public string FolderName => "GameServices";
 
-        public string parentFolder => "Gley";
+        public string ParentFolder => "Gley";
     }
 }
