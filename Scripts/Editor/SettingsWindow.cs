@@ -1,4 +1,4 @@
-﻿using Gley.Common;
+﻿using Gley.Common.Editor;
 using Gley.GameServices.Internal;
 using System;
 using System.Collections.Generic;
@@ -31,7 +31,7 @@ namespace Gley.GameServices.Editor
         [MenuItem(SettingsWindowProperties.menuItem, false)]
         private static void Init()
         {
-            WindowLoader.LoadWindow<SettingsWindow>(new SettingsWindowProperties(), out rootFolder, out rootWithoutAssets);
+            WindowLoader.LoadWindow<SettingsWindow>(new SettingsWindowProperties(), new Version(), out rootFolder, out rootWithoutAssets);
         }
 
         private void OnInspectorUpdate()
@@ -88,24 +88,24 @@ namespace Gley.GameServices.Editor
                     //setup preprocessor directives based on settings
                     if (usePlaymaker)
                     {
-                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, false, BuildTargetGroup.Android);
-                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, false, BuildTargetGroup.iOS);
+                        PreprocessorDirective.AddToPlatform(Common.Editor.Constants.GLEY_PLAYMAKER_SUPPORT, false, BuildTargetGroup.Android);
+                        PreprocessorDirective.AddToPlatform(Common.Editor.Constants.GLEY_PLAYMAKER_SUPPORT, false, BuildTargetGroup.iOS);
                     }
                     else
                     {
-                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, true, BuildTargetGroup.Android);
-                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_PLAYMAKER_SUPPORT, true, BuildTargetGroup.iOS);
+                        PreprocessorDirective.AddToPlatform(Common.Editor.Constants.GLEY_PLAYMAKER_SUPPORT, true, BuildTargetGroup.Android);
+                        PreprocessorDirective.AddToPlatform(Common.Editor.Constants.GLEY_PLAYMAKER_SUPPORT, true, BuildTargetGroup.iOS);
                     }
 
                     if (useUVS)
                     {
-                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, false, BuildTargetGroup.Android);
-                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, false, BuildTargetGroup.iOS);
+                        PreprocessorDirective.AddToPlatform(Common.Editor.Constants.GLEY_UVS_SUPPORT, false, BuildTargetGroup.Android);
+                        PreprocessorDirective.AddToPlatform(Common.Editor.Constants.GLEY_UVS_SUPPORT, false, BuildTargetGroup.iOS);
                     }
                     else
                     {
-                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, true, BuildTargetGroup.Android);
-                        PreprocessorDirective.AddToPlatform(Common.Constants.GLEY_UVS_SUPPORT, true, BuildTargetGroup.iOS);
+                        PreprocessorDirective.AddToPlatform(Common.Editor.Constants.GLEY_UVS_SUPPORT, true, BuildTargetGroup.Android);
+                        PreprocessorDirective.AddToPlatform(Common.Editor.Constants.GLEY_UVS_SUPPORT, true, BuildTargetGroup.iOS);
                     }
 
                     //save id`s
@@ -132,7 +132,7 @@ namespace Gley.GameServices.Editor
                     break;
 
                 case 1:
-                    Gley.Common.EditorUtilities.CreateFolder($"{rootFolder}/Plugins/Android/");
+                    Gley.Common.Editor.EditorUtilities.CreateFolder($"{rootFolder}/Plugins/Android/");
                     AssetDatabase.Refresh();
                     installing = true;
                     step++;
